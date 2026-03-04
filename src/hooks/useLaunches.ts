@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Launch, LaunchResponse } from '../types/launch'
 
 const API_URL =
-  'https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10&format=json'
+  'https://ll.thespacedevs.com/2.3.0/launch/upcoming/?limit=10&mode=detailed'
 const CACHE_KEY = 'launch-tracker-cache'
 const CACHE_TTL_MS = 5 * 60 * 1000
 
@@ -28,10 +28,22 @@ function writeCache(data: Launch[]): void {
   localStorage.setItem(CACHE_KEY, JSON.stringify(entry))
 }
 
+function readStaleCache(): Launch[] | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const entry: CacheEntry = JSON.parse(raw)
+    return entry.data
+  } catch {
+    return null
+  }
+}
+
 export function useLaunches() {
   const [launches, setLaunches] = useState<Launch[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [rateLimited, setRateLimited] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -46,6 +58,22 @@ export function useLaunches() {
 
       try {
         const res = await fetch(API_URL)
+
+        if (res.status === 429) {
+          const stale = readStaleCache()
+          if (!cancelled) {
+            if (stale) {
+              setLaunches(stale)
+              setRateLimited(true)
+              setLoading(false)
+            } else {
+              setError('Rate limited — please try again in a few minutes')
+              setLoading(false)
+            }
+          }
+          return
+        }
+
         if (!res.ok) throw new Error(`API returned ${res.status}`)
         const json: LaunchResponse = await res.json()
         if (!cancelled) {
@@ -65,5 +93,5 @@ export function useLaunches() {
     return () => { cancelled = true }
   }, [])
 
-  return { launches, loading, error }
+  return { launches, loading, error, rateLimited }
 }

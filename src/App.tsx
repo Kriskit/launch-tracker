@@ -4,7 +4,7 @@ import { LaunchCard } from './components/LaunchCard'
 import { StarField } from './components/StarField'
 
 export default function App() {
-  const { launches, loading, error } = useLaunches()
+  const { launches, loading, error, rateLimited } = useLaunches()
 
   const nextLaunch = launches.find(
     (l) => new Date(l.net).getTime() > Date.now()
@@ -22,6 +22,14 @@ export default function App() {
           Live upcoming launches from around the world
         </p>
       </header>
+
+      {rateLimited && (
+        <div className="relative z-10 max-w-6xl mx-auto px-4 mb-4">
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-4 py-2.5 text-yellow-400 text-sm text-center">
+            ⚠️ Data may be outdated — API rate limit reached. Showing cached data.
+          </div>
+        </div>
+      )}
 
       <main className="relative z-10 max-w-6xl mx-auto px-4 pb-16">
         {loading && (

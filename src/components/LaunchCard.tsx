@@ -11,12 +11,14 @@ const fallbackImg =
   )
 
 export function LaunchCard({ launch }: LaunchCardProps) {
-  const statusColors: Record<string, string> = {
-    'Go for Launch': 'bg-green-500/20 text-green-400',
-    'TBD': 'bg-yellow-500/20 text-yellow-400',
-    'Launch Successful': 'bg-blue-500/20 text-blue-400',
+  const getStatusColor = (name: string): string => {
+    const s = name.toLowerCase()
+    if (s.includes('go') || s.includes('success')) return 'bg-green-500/20 text-green-400'
+    if (s.includes('tbd') || s.includes('tbc')) return 'bg-yellow-500/20 text-yellow-400'
+    if (s.includes('hold') || s.includes('fail') || s.includes('no go')) return 'bg-red-500/20 text-red-400'
+    return 'bg-gray-500/20 text-gray-400'
   }
-  const statusCls = statusColors[launch.status.name] ?? 'bg-gray-500/20 text-gray-400'
+  const statusCls = getStatusColor(launch.status.name)
 
   const launchDate = new Date(launch.net)
   const dateStr = launchDate.toLocaleDateString('en-US', {

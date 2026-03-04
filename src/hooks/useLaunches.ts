@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Launch, LaunchResponse } from '../types/launch'
 
 const API_URL =
-  'https://ll.thespacedevs.com/2.3.0/launch/upcoming/?limit=10&mode=detailed'
+  'https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10&format=json&mode=detailed'
 const CACHE_KEY = 'launch-tracker-cache'
 const CACHE_TTL_MS = 5 * 60 * 1000
 
